@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 interface AssessmentsViewProps {
-  user: User;
+  user?: User | null;
   onNavigateToConsultation: (topic?: string) => void;
   onNavigateToMaterials: () => void;
 }

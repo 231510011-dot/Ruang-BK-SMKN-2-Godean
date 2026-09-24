@@ -34,6 +34,13 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({
     'Lainnya',
   ];
 
+  const [studentName, setStudentName] = useState(() => {
+    return localStorage.getItem('ruang_bk_student_name') || user?.name || '';
+  });
+  const [studentClass, setStudentClass] = useState(() => {
+    return localStorage.getItem('ruang_bk_student_class') || user?.class || 'Kelas 10 DPB';
+  });
+
   const [selectedCategory, setSelectedCategory] = useState(options[0]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,14 +50,22 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      alert('Silakan login terlebih dahulu untuk mengirimkan permintaan bantuan kepada Guru BK.');
-      return;
-    }
 
     setLoading(true);
     try {
-      await api.sendEmergencyAssistance(selectedCategory, notes);
+      if (studentName.trim()) {
+        localStorage.setItem('ruang_bk_student_name', studentName.trim());
+      }
+      if (studentClass.trim()) {
+        localStorage.setItem('ruang_bk_student_class', studentClass.trim());
+      }
+
+      await api.sendEmergencyAssistance({
+        category: selectedCategory,
+        notes,
+        student_name: studentName.trim() || 'Siswa SMKN 2 Godean (Mendesak)',
+        student_class: studentClass.trim() || 'SMKN 2 Godean',
+      });
       setSuccess(true);
     } catch (err: any) {
       alert(err.message || 'Gagal mengirimkan permintaan bantuan.');
@@ -137,6 +152,33 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-rose-50/70 border border-rose-200/80 rounded-xl">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Nama Siswa (Opsional/Boleh Anonim):
+                  </label>
+                  <input
+                    type="text"
+                    value={studentName}
+                    onChange={(e) => setStudentName(e.target.value)}
+                    placeholder="Nama lengkapmu"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Kelas:
+                  </label>
+                  <input
+                    type="text"
+                    value={studentClass}
+                    onChange={(e) => setStudentClass(e.target.value)}
+                    placeholder="Contoh: Kelas 10 DPB"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 bg-white"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-2">
                   Apa yang sedang kamu rasakan atau butuhkan saat ini?

@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 
 interface BKGamesViewProps {
-  user: User;
+  user?: User | null;
   onNavigate: (view: string) => void;
 }
 
@@ -996,7 +996,7 @@ export const BKGamesView: React.FC<BKGamesViewProps> = ({ user, onNavigate }) =>
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-bold text-slate-500">Target</span>
-                  <p className="text-xs font-bold text-emerald-700">Jurusan: {user.major || 'SMK'}</p>
+                  <p className="text-xs font-bold text-emerald-700">Jurusan: {user?.major || 'SMK'}</p>
                 </div>
               </div>
 

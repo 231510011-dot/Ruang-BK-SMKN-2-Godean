@@ -1011,7 +1011,7 @@ class Database {
     if (userId) {
       return this.data.journals.filter(j => j.user_id === userId);
     }
-    return [];
+    return this.data.journals;
   }
 
   public addJournal(journal: Journal): Journal {

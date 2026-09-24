@@ -19,14 +19,19 @@ import {
 interface LandingPageProps {
   onOpenAuth: (defaultTab?: 'siswa' | 'guru_bk') => void;
   onOpenEmergency: () => void;
+  onNavigate?: (view: string) => void;
+  onStartStudent?: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenAuth,
   onOpenEmergency,
+  onNavigate,
+  onStartStudent,
 }) => {
   const services = [
     {
+      id: 'materials',
       icon: BookOpen,
       color: 'bg-blue-500 text-white',
       badge: '4 Kategori',
@@ -34,6 +39,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       desc: 'Materi terstruktur seputar BK Pribadi, BK Sosial, BK Belajar, dan BK Karier dilengkapi kuis singkat interaktif dan refleksi.',
     },
     {
+      id: 'consultations',
       icon: MessageSquareHeart,
       color: 'bg-emerald-500 text-white',
       badge: 'Privat & Rahasia',
@@ -41,6 +47,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       desc: 'Sampaikan unek-unek atau kesulitan belajarmu dengan aman. Tersedia opsi kirim anonim dan balasan langsung dari Guru BK.',
     },
     {
+      id: 'booking',
       icon: CalendarCheck,
       color: 'bg-indigo-500 text-white',
       badge: 'Bebas Antre',
@@ -48,6 +55,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       desc: 'Pilih jadwal tatap muka di Ruang BK SMKN 2 Godean atau sesi online. Sistem anti-bentrok menjamin slot khusus untukmu.',
     },
     {
+      id: 'assessments',
       icon: BrainCircuit,
       color: 'bg-purple-500 text-white',
       badge: 'Skala 1-5',
@@ -55,6 +63,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       desc: 'Refleksi awal untuk mengenali kondisi belajar, manajemen waktu, kepercayaan diri, pertemanan, dan kesiapan karier.',
     },
     {
+      id: 'games',
       icon: Gamepad2,
       color: 'bg-pink-500 text-white',
       badge: 'Online & Interaktif',
@@ -62,6 +71,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       desc: 'Mini-game edukatif untuk 4 bidang BK: Detektif Empati Sosial, Regulasi Emosi & Pernapasan, Tantangan Manajemen Waktu, dan Petualangan Karier Holland RIASEC.',
     },
     {
+      id: 'career',
       icon: Compass,
       color: 'bg-amber-500 text-white',
       badge: 'BMW: Bekerja/Kuliah/Wirausaha',
@@ -69,6 +79,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       desc: 'Informasi persiapan PKL, tips CV lolos HRD, strategi wawancara, info beasiswa kuliah KIP-K, serta wirausaha muda.',
     },
     {
+      id: 'journals',
       icon: PenLine,
       color: 'bg-rose-500 text-white',
       badge: 'Refleksi Harian',
@@ -76,6 +87,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       desc: 'Catat perasaan hari ini, tantangan yang dihadapi, dan target berikutnya. Sepenuhnya privat kecuali jika ingin kamu bagikan.',
     },
   ];
+
+  const handleGoStudent = (viewId: string = 'dashboard') => {
+    if (onNavigate) {
+      onNavigate(viewId);
+    } else if (onStartStudent) {
+      onStartStudent();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -101,10 +120,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <button
                 id="btn-hero-siswa"
-                onClick={() => onOpenAuth('siswa')}
+                onClick={() => handleGoStudent('dashboard')}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-sm sm:text-base shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
               >
-                <span>Masuk sebagai Siswa</span>
+                <span>Buka Layanan Siswa (Tanpa Login)</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -139,17 +158,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             Ruang Nyaman untuk Setiap Siswa SMK
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600">
-            Disediakan khusus untuk mendukung perkembangan akademis, keterampilan kejuruan, kepribadian, dan karier masa depan siswa SMKN 2 Godean.
+            Disediakan khusus untuk mendukung perkembangan akademis, keterampilan kejuruan, kepribadian, dan karier masa depan siswa SMKN 2 Godean (Dapat diakses langsung tanpa registrasi).
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((svc, i) => {
+          {services.map((svc) => {
             const Icon = svc.icon;
             return (
               <div
-                key={i}
-                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-300 transition-all duration-200 flex flex-col justify-between group"
+                key={svc.id}
+                onClick={() => handleGoStudent(svc.id)}
+                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-200 flex flex-col justify-between group cursor-pointer"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -169,7 +189,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
 
                 <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-700">
-                  <span>Jelajahi Fitur</span>
+                  <span>Buka Layanan Sekarang</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>

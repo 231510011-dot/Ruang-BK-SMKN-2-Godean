@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 interface CareerViewProps {
-  user: User;
+  user?: User | null;
 }
 
 export const CareerView: React.FC<CareerViewProps> = ({ user }) => {

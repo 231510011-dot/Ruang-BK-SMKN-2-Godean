@@ -123,10 +123,14 @@ export const api = {
 
   getAssessmentById: (id: string) => request<Assessment>(`/assessments/${id}`),
 
-  submitAssessment: (assessment_id: string, answers: Record<number, number>) =>
+  submitAssessment: (
+    assessment_id: string,
+    answers: Record<number, number>,
+    studentInfo?: { student_name?: string; student_class?: string }
+  ) =>
     request<AssessmentResult>('/assessments/submit', {
       method: 'POST',
-      body: JSON.stringify({ assessment_id, answers }),
+      body: JSON.stringify({ assessment_id, answers, ...studentInfo }),
     }),
 
   getAssessmentResults: () => request<AssessmentResult[]>('/assessment-results'),
@@ -136,7 +140,16 @@ export const api = {
 
   getConsultationById: (id: string) => request<Consultation>(`/consultations/${id}`),
 
-  createConsultation: (payload: { topic: string; message: string; urgency: string; is_anonymous: boolean }) =>
+  createConsultation: (payload: {
+    topic: string;
+    message: string;
+    urgency: string;
+    is_anonymous: boolean;
+    student_name?: string;
+    student_class?: string;
+    name?: string;
+    class?: string;
+  }) =>
     request<Consultation>('/consultations', {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -160,6 +173,10 @@ export const api = {
     service_type: string;
     topic: string;
     counseling_mode: string;
+    student_name?: string;
+    student_class?: string;
+    name?: string;
+    class?: string;
   }) =>
     request<CounselingSchedule>('/counseling-schedules', {
       method: 'POST',
@@ -175,7 +192,20 @@ export const api = {
   // Journals
   getJournals: () => request<Journal[]>('/journals'),
 
-  createJournal: (payload: Partial<Journal>) =>
+  createJournal: (payload: {
+    mood: string;
+    title: string;
+    feeling: string;
+    problems?: string;
+    actions_taken?: string;
+    improvements?: string;
+    next_goals?: string;
+    is_shared_with_counselor: boolean;
+    student_name?: string;
+    student_class?: string;
+    name?: string;
+    class?: string;
+  }) =>
     request<Journal>('/journals', {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -219,10 +249,10 @@ export const api = {
     }),
 
   // Emergency Assistance
-  sendEmergencyAssistance: (category: string, notes?: string) =>
+  sendEmergencyAssistance: (payload: { category: string; notes?: string; student_name?: string; student_class?: string }) =>
     request<{ message: string; data: AssistanceRequest }>('/emergency-assistance', {
       method: 'POST',
-      body: JSON.stringify({ category, notes }),
+      body: JSON.stringify(payload),
     }),
 
   getEmergencyAssistance: () => request<AssistanceRequest[]>('/emergency-assistance'),

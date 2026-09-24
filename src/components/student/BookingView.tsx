@@ -11,10 +11,12 @@ import {
   AlertCircle,
   Plus,
   Ban,
+  UserCheck,
+  School,
 } from 'lucide-react';
 
 interface BookingViewProps {
-  user: User;
+  user?: User | null;
 }
 
 export const BookingView: React.FC<BookingViewProps> = ({ user }) => {
@@ -26,6 +28,13 @@ export const BookingView: React.FC<BookingViewProps> = ({ user }) => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Form Fields
+  const [studentName, setStudentName] = useState(() => {
+    return localStorage.getItem('ruang_bk_student_name') || user?.name || '';
+  });
+  const [studentClass, setStudentClass] = useState(() => {
+    return localStorage.getItem('ruang_bk_student_class') || user?.class || 'Kelas 10 DPB';
+  });
+
   // Get tomorrow's date formatted as YYYY-MM-DD
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -85,6 +94,15 @@ export const BookingView: React.FC<BookingViewProps> = ({ user }) => {
     setError(null);
     setSuccessMsg(null);
 
+    if (!studentName.trim()) {
+      setError('Nama lengkap siswa wajib diisi.');
+      return;
+    }
+    if (!studentClass.trim()) {
+      setError('Kelas siswa wajib diisi.');
+      return;
+    }
+
     if (isSlotTaken(time)) {
       setError(`Slot waktu ${time} pada tanggal ${date} sudah dibooking oleh siswa lain. Silakan pilih jam atau tanggal lain.`);
       return;
@@ -92,7 +110,12 @@ export const BookingView: React.FC<BookingViewProps> = ({ user }) => {
 
     setSubmitting(true);
     try {
+      localStorage.setItem('ruang_bk_student_name', studentName.trim());
+      localStorage.setItem('ruang_bk_student_class', studentClass.trim());
+
       const created = await api.createSchedule({
+        student_name: studentName.trim(),
+        student_class: studentClass.trim(),
         date,
         time,
         service_type: serviceType,
@@ -102,7 +125,7 @@ export const BookingView: React.FC<BookingViewProps> = ({ user }) => {
 
       setSchedules((prev) => [created, ...prev]);
       setTakenSlots((prev) => [...prev, { date, time }]);
-      setSuccessMsg('Pengajuan jadwal konseling berhasil dikirim. Menunggu persetujuan Guru BK.');
+      setSuccessMsg('Pengajuan jadwal konseling berhasil dikirim ke Guru BK SMKN 2 Godean.');
       setTopic('');
     } catch (err: any) {
       setError(err.message || 'Gagal mengajukan jadwal konseling.');
@@ -171,6 +194,39 @@ export const BookingView: React.FC<BookingViewProps> = ({ user }) => {
           )}
 
           <form onSubmit={handleBookingSubmit} className="space-y-4">
+            {/* Field Nama & Kelas Siswa */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-indigo-50/60 border border-indigo-200/80 rounded-2xl">
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Nama Lengkap Siswa *</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  placeholder="Masukkan nama lengkapmu"
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-white text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                  <School className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Kelas *</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={studentClass}
+                  onChange={(e) => setStudentClass(e.target.value)}
+                  placeholder="Contoh: Kelas 10 DPB, Kelas 11 Kuliner"
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-white text-slate-800"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Pilih Tanggal Konseling *

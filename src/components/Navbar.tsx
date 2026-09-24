@@ -29,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenChangePassword,
   onLogout,
   onGoHome,
+  currentView = 'dashboard',
   onSelectView,
 }) => {
   return (
@@ -57,6 +58,34 @@ export const Navbar: React.FC<NavbarProps> = ({
               </p>
             </div>
           </div>
+
+          {/* Navigation Links for Students */}
+          {user?.role !== 'guru_bk' && onSelectView && (
+            <nav className="hidden xl:flex items-center gap-1">
+              {[
+                { id: 'dashboard', label: 'Dashboard' },
+                { id: 'materials', label: 'Materi BK' },
+                { id: 'consultations', label: 'Konsultasi BK' },
+                { id: 'booking', label: 'Booking Jadwal' },
+                { id: 'journals', label: 'Jurnal Refleksi' },
+                { id: 'assessments', label: 'Asesmen Mandiri' },
+                { id: 'games', label: 'Permainan Edukasi' },
+                { id: 'career', label: 'Karier SMK' },
+              ].map((link) => (
+                <button
+                  key={link.id}
+                  onClick={() => onSelectView(link.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    currentView === link.id
+                      ? 'bg-blue-100/70 text-blue-800 font-extrabold shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              ))}
+            </nav>
+          )}
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -135,16 +164,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </button>
                     )}
 
-                    {user.role === 'siswa' && onSelectView && (
-                      <button
-                        onClick={() => onSelectView('games')}
-                        className="w-full text-left px-4 py-2 text-xs sm:text-sm text-purple-700 hover:bg-purple-50 flex items-center gap-2.5 transition-colors font-bold cursor-pointer"
-                      >
-                        <Gamepad2 className="w-4 h-4 text-purple-600" />
-                        <span>Permainan Online BK</span>
-                      </button>
-                    )}
-
                     <button
                       onClick={onOpenChangePassword}
                       className="w-full text-left px-4 py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
@@ -168,19 +187,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             ) : (
               <div className="flex items-center gap-2">
                 <button
-                  id="btn-login-siswa"
-                  onClick={() => onOpenAuth('siswa')}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs sm:text-sm shadow-sm transition-all cursor-pointer"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Masuk Siswa</span>
-                </button>
-                <button
                   id="btn-login-guru"
                   onClick={() => onOpenAuth('guru_bk')}
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <Sparkles className="w-4 h-4 text-amber-400" />
                   <span>Login Guru BK</span>
                 </button>
               </div>
@@ -188,6 +199,33 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       </div>
+      {/* Mobile & Tablet Horizontal Nav Strip for Students */}
+      {user?.role !== 'guru_bk' && onSelectView && (
+        <div className="xl:hidden bg-slate-50/95 border-t border-slate-200/80 px-4 py-2 overflow-x-auto flex items-center gap-1.5 scrollbar-none">
+          {[
+            { id: 'dashboard', label: 'Dashboard' },
+            { id: 'materials', label: 'Materi BK' },
+            { id: 'consultations', label: 'Konsultasi BK' },
+            { id: 'booking', label: 'Booking' },
+            { id: 'journals', label: 'Jurnal' },
+            { id: 'assessments', label: 'Asesmen' },
+            { id: 'games', label: 'Game BK' },
+            { id: 'career', label: 'Karier' },
+          ].map((link) => (
+            <button
+              key={link.id}
+              onClick={() => onSelectView(link.id)}
+              className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                currentView === link.id
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+        </div>
+      )}
     </header>
   );
 };

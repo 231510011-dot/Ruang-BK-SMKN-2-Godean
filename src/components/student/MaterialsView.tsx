@@ -17,7 +17,7 @@ import {
 
 interface MaterialsViewProps {
   materials: Material[];
-  user: User;
+  user?: User | null;
   onRefreshMaterials: () => void;
   onOpenJournalWithPrompt?: (prompt: string, title: string) => void;
 }

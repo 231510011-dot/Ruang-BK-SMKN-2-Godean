@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 interface StudentDashboardProps {
-  user: User;
+  user?: User | null;
   onNavigate: (view: string) => void;
   onOpenEmergency: () => void;
   recentMaterials: Material[];
@@ -36,6 +36,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   recentConsultation,
   latestJournal,
 }) => {
+  const localName = typeof window !== 'undefined' ? localStorage.getItem('ruang_bk_student_name') : null;
+  const localClass = typeof window !== 'undefined' ? localStorage.getItem('ruang_bk_student_class') : null;
+  const displayName = user?.name || localName || 'Siswa SMKN 2 Godean';
+  const displayClass = user?.class || localClass || 'SMK Negeri 2 Godean';
+
   const menuItems = [
     {
       id: 'materials',
@@ -102,14 +107,6 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       badge: 'Interaktif 4 Bidang',
       desc: 'Game edukasi emosi, empati, prioritas, & karier',
     },
-    {
-      id: 'profile',
-      title: 'Profil Saya',
-      icon: UserIcon,
-      color: 'bg-slate-700 text-white',
-      badge: 'Biodata',
-      desc: 'Data NIS, kelas, dan riwayat bimbingan',
-    },
   ];
 
   return (
@@ -119,13 +116,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-xs mb-3">
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>Portal Siswa SMKN 2 Godean</span>
+            <span>Portal Siswa SMKN 2 Godean (Akses Terbuka)</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Selamat Datang di Ruang BK 👋
           </h2>
           <p className="mt-2 text-sm sm:text-base text-blue-100 font-medium">
-            Halo, <strong className="text-white">{user.name}</strong> ({user.class || 'Siswa SMK'} - {user.major || 'Kompetensi Kejuruan'}). Kami siap menemanimu mengenal diri, berkembang, dan merancang masa depan terbaikmu.
+            Halo, <strong className="text-white">{displayName}</strong> ({displayClass}). Akses seluruh layanan Bimbingan dan Konseling SMKN 2 Godean secara langsung tanpa perlu login.
           </p>
           <div className="mt-5 flex flex-wrap gap-2.5">
             <button
@@ -135,10 +132,16 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               Kirim Curhat Sekarang
             </button>
             <button
-              onClick={() => onNavigate('assessments')}
-              className="px-4 py-2 rounded-xl bg-blue-800/60 hover:bg-blue-800 text-white border border-white/20 text-xs font-bold transition-colors cursor-pointer"
+              onClick={() => onNavigate('booking')}
+              className="px-4 py-2 rounded-xl bg-indigo-500/80 hover:bg-indigo-500 text-white border border-white/20 text-xs font-bold transition-colors cursor-pointer"
             >
-              Mulai Self-Assessment
+              Booking Jadwal Konseling
+            </button>
+            <button
+              onClick={() => onNavigate('journals')}
+              className="px-4 py-2 rounded-xl bg-amber-500/80 hover:bg-amber-500 text-white border border-white/20 text-xs font-bold transition-colors cursor-pointer"
+            >
+              Tulis Jurnal Refleksi
             </button>
             <button
               onClick={onOpenEmergency}

@@ -15,10 +15,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
+  UserCheck,
+  School,
 } from 'lucide-react';
 
 interface JournalViewProps {
-  user: User;
+  user?: User | null;
 }
 
 export const JournalView: React.FC<JournalViewProps> = ({ user }) => {
@@ -30,6 +32,12 @@ export const JournalView: React.FC<JournalViewProps> = ({ user }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Form Fields
+  const [studentName, setStudentName] = useState(() => {
+    return localStorage.getItem('ruang_bk_student_name') || user?.name || '';
+  });
+  const [studentClass, setStudentClass] = useState(() => {
+    return localStorage.getItem('ruang_bk_student_class') || user?.class || 'Kelas 10 DPB';
+  });
   const [mood, setMood] = useState('Senang');
   const [title, setTitle] = useState('');
   const [feeling, setFeeling] = useState('');
@@ -69,10 +77,25 @@ export const JournalView: React.FC<JournalViewProps> = ({ user }) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+
+    if (!studentName.trim()) {
+      setError('Nama siswa wajib diisi.');
+      return;
+    }
+    if (!studentClass.trim()) {
+      setError('Kelas siswa wajib diisi.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
+      localStorage.setItem('ruang_bk_student_name', studentName.trim());
+      localStorage.setItem('ruang_bk_student_class', studentClass.trim());
+
       const created = await api.createJournal({
+        student_name: studentName.trim(),
+        student_class: studentClass.trim(),
         mood,
         title,
         feeling,
@@ -144,6 +167,39 @@ export const JournalView: React.FC<JournalViewProps> = ({ user }) => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Field Nama & Kelas Siswa */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-amber-50/60 border border-amber-200/80 rounded-2xl">
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Nama Siswa *</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  placeholder="Masukkan nama lengkapmu"
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                  <School className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Kelas *</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={studentClass}
+                  onChange={(e) => setStudentClass(e.target.value)}
+                  placeholder="Contoh: Kelas 10 DPB, Kelas 11 Kuliner"
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white text-slate-800"
+                />
+              </div>
+            </div>
+
             {/* Mood Selector */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2">

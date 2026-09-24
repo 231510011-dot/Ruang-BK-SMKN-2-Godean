@@ -39,7 +39,7 @@ export default function App() {
 
   // Modals
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [authDefaultTab, setAuthDefaultTab] = useState<'siswa' | 'guru_bk'>('siswa');
+  const [authDefaultTab, setAuthDefaultTab] = useState<'siswa' | 'guru_bk'>('guru_bk');
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
@@ -50,72 +50,70 @@ export default function App() {
   const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([]);
   const [journals, setJournals] = useState<Journal[]>([]);
 
+  const loadData = async (currentUser?: User | null) => {
+    try {
+      const mats = await api.getMaterials();
+      setMaterials(mats);
+
+      if (!currentUser || currentUser.role === 'siswa') {
+        const [schedData, consultData, assessData, jourData] = await Promise.all([
+          api.getSchedules().catch(() => []),
+          api.getConsultations().catch(() => []),
+          api.getAssessmentResults().catch(() => []),
+          api.getJournals().catch(() => []),
+        ]);
+
+        if (Array.isArray(schedData)) {
+          setSchedules(schedData);
+        } else if (schedData && (schedData as any).mySchedules) {
+          setSchedules((schedData as any).mySchedules);
+        }
+
+        if (Array.isArray(consultData)) setConsultations(consultData);
+        if (Array.isArray(assessData)) setAssessmentResults(assessData);
+        if (Array.isArray(jourData)) setJournals(jourData);
+      }
+    } catch (e) {
+      console.error('Error loading data:', e);
+    }
+  };
+
   // Check auth on startup
   useEffect(() => {
     const initAuth = async () => {
       const token = tokenStorage.get();
+      let currentUser: User | null = null;
       if (token) {
         try {
-          const profile = await api.getMe();
-          setUser(profile);
-          loadUserData(profile);
+          currentUser = await api.getMe();
+          setUser(currentUser);
         } catch (e) {
           console.warn('Session expired or invalid:', e);
           tokenStorage.clear();
           setUser(null);
         }
       }
+      await loadData(currentUser);
       setLoading(false);
     };
 
     initAuth();
   }, []);
 
-  const loadUserData = async (currentUser: User) => {
-    try {
-      const mats = await api.getMaterials();
-      setMaterials(mats);
-
-      if (currentUser.role === 'siswa') {
-        const [schedData, consultData, assessData, jourData] = await Promise.all([
-          api.getSchedules(),
-          api.getConsultations(),
-          api.getAssessmentResults(),
-          api.getJournals(),
-        ]);
-
-        if (Array.isArray(schedData)) {
-          setSchedules(schedData);
-        } else if (schedData && schedData.mySchedules) {
-          setSchedules(schedData.mySchedules);
-        }
-
-        setConsultations(consultData);
-        setAssessmentResults(assessData);
-        setJournals(jourData);
-      }
-    } catch (e) {
-      console.error('Error loading user data:', e);
-    }
-  };
-
   const handleLoginSuccess = (loggedInUser: User) => {
     setUser(loggedInUser);
     setCurrentView('dashboard');
-    loadUserData(loggedInUser);
+    loadData(loggedInUser);
   };
 
   const handleLogout = () => {
     api.logout();
     setUser(null);
     setCurrentView('dashboard');
-    setSchedules([]);
-    setConsultations([]);
-    setAssessmentResults([]);
-    setJournals([]);
+    loadData(null);
   };
 
-  const handleOpenAuth = (defaultTab: 'siswa' | 'guru_bk' = 'siswa') => {
+  const handleOpenAuth = (defaultTab: 'siswa' | 'guru_bk' = 'guru_bk') => {
     setAuthDefaultTab(defaultTab);
     setIsAuthOpen(true);
   };
@@ -148,13 +146,7 @@ export default function App() {
 
       {/* Main Body */}
       <div className="flex-1">
-        {!user ? (
-          /* Public Landing Page */
-          <LandingPage
-            onOpenAuth={handleOpenAuth}
-            onOpenEmergency={() => setIsEmergencyOpen(true)}
-          />
-        ) : user.role === 'guru_bk' ? (
+        {user?.role === 'guru_bk' ? (
           /* Guru BK / Admin Dashboard Shell */
           <AdminDashboardShell
             user={user}
@@ -162,8 +154,16 @@ export default function App() {
             activeTab={currentView}
             onSelectTab={(v) => setCurrentView(v)}
           />
+        ) : currentView === 'landing' ? (
+          /* School Information Landing Page */
+          <LandingPage
+            onOpenAuth={handleOpenAuth}
+            onOpenEmergency={() => setIsEmergencyOpen(true)}
+            onNavigate={(v) => setCurrentView(v)}
+            onStartStudent={() => setCurrentView('dashboard')}
+          />
         ) : (
-          /* Student Views */
+          /* Student Views (Open access for students without login) */
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Student Navigation Breadcrumbs / View switcher if not on home dashboard */}
             {currentView !== 'dashboard' && (
@@ -172,11 +172,11 @@ export default function App() {
                   onClick={() => setCurrentView('dashboard')}
                   className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>← Kembali ke Menu Utama</span>
+                  <span>← Kembali ke Menu Utama Siswa</span>
                 </button>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-500 capitalize">
-                    Layanan: {currentView}
+                    Layanan Siswa: {currentView}
                   </span>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export default function App() {
               <MaterialsView
                 materials={materials}
                 user={user}
-                onRefreshMaterials={() => loadUserData(user)}
+                onRefreshMaterials={() => loadData(user)}
               />
             )}
 
@@ -228,7 +228,16 @@ export default function App() {
 
             {currentView === 'profile' && (
               <StudentProfileView
-                user={user}
+                user={
+                  user || {
+                    id: 'guest',
+                    name: (typeof window !== 'undefined' && localStorage.getItem('ruang_bk_student_name')) || 'Siswa SMKN 2 Godean',
+                    username: 'siswa',
+                    role: 'siswa',
+                    class: (typeof window !== 'undefined' && localStorage.getItem('ruang_bk_student_class')) || 'Kelas 10 DPB',
+                    major: 'SMK',
+                  }
+                }
                 onOpenChangePassword={() => setIsChangePasswordOpen(true)}
                 schedulesCount={schedules.length}
                 consultationsCount={consultations.length}
